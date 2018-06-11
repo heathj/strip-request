@@ -1,8 +1,6 @@
 (ns strip-request.core
-  (:require [clojure.string :as string]
-            [clojure.data.json :as json]
-            [clojure.tools.cli :refer [parse-opts]]
-            [clojure.java.io :as io])
+  (:require [clojure.string :as string])
+
   (:import (java.net Socket InetAddress InetSocketAddress)
            (javax.net.ssl SSLSocketFactory X509TrustManager SSLContext)
            (java.security KeyStore)
@@ -312,17 +310,22 @@ Content-Length: 342
   [{:keys [body-type]}]
   (println (str "The encoding form " body-type " is not supported.")))
 
+
+(def new-line
+  "Java's interop to get a system specific new line"
+  (System/getProperty "line.separator"))
+
 (defn build-raw-request
   "From a request map (See parse-raw-request) build a raw request"
   [request-map]
-  (let [req (string/join "\n" (keep identity [(string/join " " [(method->string request-map) (path->string request-map) (:version request-map)])
+  (let [req (string/join new-line (keep identity [(string/join " " [(method->string request-map) (path->string request-map) (:version request-map)])
                                      (if (< 0 (count (:headers request-map)))
-                                       (string/join "\n" (map #(string/join ": " %1) (:headers request-map))))
+                                       (string/join new-line (map #(string/join ": " %1) (:headers request-map))))
                                      (if (< 0 (count (:cookies request-map))) 
                                        (str "Cookie: " (string/join "; " (map #(string/join "=" %1) (:cookies request-map)))))]))]
     (if-not (= (:body-type request-map) :empty)
-      (string/join "\n\n" [req (encode request-map)])
-      (str req "\n\n"))))
+      (string/join new-line new-line [req (encode request-map)])
+      (str req new-line new-line))))
 
 (defn send-http
   "Send a string over a socket"
@@ -476,4 +479,4 @@ Content-Length: 342
 
 
 (comment
-  (def opts {:host "google-gruyere.appspot.com" :port 443 :http false :req (slurp "/home/jacob/request.txt")}))
+  (def opts {:host "google-gruyere.appspot.com" :port 443 :http false :req (slurp "C:\\Users\\Jake\\Documents\\workspace\\strip-request\\src\\strip_request\\test1.txt")}))
