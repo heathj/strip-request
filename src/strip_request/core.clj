@@ -1,5 +1,8 @@
 (ns strip-request.core
-  (:require [clojure.string :as string])
+  (:require [clojure.string :as string]
+            [clojure.data.json :as json]
+            [clojure.tools.cli :refer [parse-opts]]
+            [clojure.java.io :as io])
 
   (:import (java.net Socket InetAddress InetSocketAddress)
            (javax.net.ssl SSLSocketFactory X509TrustManager SSLContext)
@@ -479,4 +482,5 @@ Content-Length: 342
 
 
 (comment
-  (def opts {:host "google-gruyere.appspot.com" :port 443 :http false :req (slurp "C:\\Users\\Jake\\Documents\\workspace\\strip-request\\src\\strip_request\\test1.txt")}))
+  (def opts {:host "google-gruyere.appspot.com" :port 443 :http false :req (slurp "C:\\Users\\Jake\\Documents\\workspace\\strip-request\\src\\strip_request\\test1.txt")})
+  (def opts {:host "example.com" :port 80 :http true :req (slurp "C:\\Users\\Jake\\Documents\\workspace\\strip-request\\src\\strip_request\\test1.txt")}))
