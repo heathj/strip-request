@@ -20,7 +20,7 @@ command:
 
 `java -jar strip-request.jar -i request.txt`
 
-The following request to [exmaple.com](http://example.com)
+The following request to [example.com](http://example.com)
 
 ~~~http
 GET / HTTP/1.1
