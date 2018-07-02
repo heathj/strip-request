@@ -2,7 +2,8 @@
   (:require [clojure.string :as string]
             [clojure.data.json :as json]
             [clojure.tools.cli :refer [parse-opts]]
-            [clojure.java.io :as io])
+            [clojure.java.io :as io]
+            [clojure.pprint :as pprint])
 
   (:import (java.net Socket InetAddress InetSocketAddress)
            (javax.net.ssl SSLSocketFactory X509TrustManager SSLContext)
@@ -70,7 +71,7 @@
      {:exit-message (usage summary) :ok? true}
      errors
      {:exit-message (error-msg errors)}
-     (empty? (:request options))
+     (empty? (:req options))
      {:exit-message (str (error-msg ["Need to specify a request to send.\n\n"]) (usage summary))}
      :else
      {:opts options})))
@@ -80,6 +81,8 @@
   [status msg]
   (println msg)
   (System/exit status))
+
+
 
 (defn method->string
   "From a request map, return the string of the request method."
@@ -162,18 +165,15 @@
   "Parse the request body string from a raw request string."
   [raw-request]
   (let [doubles (memo-split-double-spaces raw-request)]
-    (if (= (count doubles) 1)
+    (if (or (= (count doubles) 1) (and (= (count doubles) 2) (empty? (second doubles))))
       {:body-type :empty :body ""} ;; Get requests will have empty bodies
       (let [body (last doubles)] 
         (try
-          (merge {:body-type :json} {:parsed-body (json/read-str body)}) ;; try to read a JSON string. If an exception happens, assume it's a form post
+          ;; try to read a JSON string. If an exception happens, assume it's a
+          ;; form post
+          (merge {:body-type :json} {:parsed-body (json/read-str body)})
           (catch Exception e
             (merge {:body-type :form} {:parsed-body (into {} (map memo-split-equals (memo-split-amps body)))})))))))
-
-(defn request->content-type
-  "Parses the 'Content-Type' header from an HTTP request string."
-  [raw-request]
-  (string/split ""))
 
 (defn request->query-params
   "Parses a query-params map from a raw request string."
@@ -410,21 +410,21 @@
           (do            
             (println "Original request:")
             (println "-----------------")
-            (println req)
-            (println "")
+            (print req)
+            (println "-----------------")
             (println "Base response:")
             (println "-----------------")
-            (pprint base-resp)
+            (pprint/pprint base-resp)
             (println "")
             (let [base-stripped (strip-request (parse-raw-request req) base-resp host port http)
                   sreq (build-raw-request base-stripped)]
               (println "Striped request:")
               (println "-----------------")
-              (println sreq)
-              (println "")
+              (print sreq)
+              (println "-----------------")
               (println "Stripped response:")
               (println "-----------------")
-              (pprint (request host port sreq :tls (not http))))))))
+              (pprint/pprint (request host port sreq :tls (not http))))))))
 
 (defn -main
   "Run program from the CLI."
@@ -432,5 +432,7 @@
   (let [{:keys [exit-message ok? opts]} (validate-opts args)]
     (if exit-message
       (exit (if ok? 0 1) exit-message)      
-      (run opts)))
+      (doall
+       (run opts)
+       (exit 0 ""))))
   1)
