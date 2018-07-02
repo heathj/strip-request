@@ -14,7 +14,7 @@ and use it:
 
 `strip-request` is simple to use with raw HTTP requests that are usually acquired
 from the browser or through a tool such as Burp repeater. A normal workflow, for
-exmaple, when using Repeater would be right-click a request in Repeater and select,
+example, when using Repeater would be right-click a request in Repeater and select,
 "Copy to File...". Once the request is saved, strip the request using the following
 command:
 
